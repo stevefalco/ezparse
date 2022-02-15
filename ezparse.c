@@ -266,7 +266,7 @@ typedef struct __attribute__((__packed__)) {
 // NB - there are probably additional BlockType's that we don't know
 // about.
 typedef struct __attribute__((__packed__)) {
-	uint16_t	BlockType;	// Block type 11, 12, 14, 15, 17, 18, 31, 101
+	uint16_t	BlockType;	// Block type 11, 12, 13, 14, 15, 17, 18, 31, 101, 102
 	uint32_t	BlockLen;	// Length, includes this header
 	uint8_t		BlockRev;	// Block format revision
 } BlkHeader;
@@ -1146,12 +1146,19 @@ dumpVirtSegmentBlock(BlkHeader *pH, VirtSegmentBlock *p)
 	fprintf(stderr, "\n");
 }
 
+typedef union {
+	char bytes[4];
+	uint32_t value;
+} GET_UINT32;
+
 void
 dumpBlock101(BlkHeader *pH, Block101 *p)
 {
 	int i;
  
         char *pStr;
+
+	GET_UINT32 u;
 
 	if(!gDebug) {
 		return;
@@ -1173,15 +1180,38 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	}
         fprintf(stderr, "\n\n");
 
-fprintf(stderr, "ProgNameLen = %d ProgVerLen = 0x%x\n",
-            p->ProgNameLen, p->ProgVerLen);
+	fprintf(stderr, "ProgNameLen = %d ProgVerLen = 0x%x\n", p->ProgNameLen, p->ProgVerLen);
 
         pStr = p->ProgName;
         fprintf(stderr, "Eznec Program Name: ");
 	for (i = 0; i < p->ProgNameLen; i++) {
 		fprintf(stderr, "%c", *pStr++);
 	}
-fprintf(stderr, "\n");
+	fprintf(stderr, "\n");
+
+	strncpy(u.bytes, pStr, sizeof(u));
+	pStr += sizeof(u);
+        fprintf(stderr, "Eznec Program Version: ");
+	for (i = 0; i < u.value; i++) {
+		fprintf(stderr, "%c", *pStr++);
+	}
+	fprintf(stderr, "\n");
+
+	// Skip 4 unknown bytes.
+	pStr += 4;
+	
+	strncpy(u.bytes, pStr, sizeof(u));
+	pStr += sizeof(u);
+	for (i = 0; i < u.value; i++) {
+		if(*pStr == '\r') {
+			// suppress CR
+			pStr++;
+		} else {
+			fprintf(stderr, "%c", *pStr++);
+		}
+	}
+	fprintf(stderr, "\n");
+
 #if 0
 	fprintf(stderr, "Eznec Program Version: ");
 	for (i = 0; i < 5; i++) {
