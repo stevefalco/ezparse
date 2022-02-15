@@ -1260,8 +1260,13 @@ dumpBlock102(BlkHeader *pH, Block102 *p)
 	fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 	fprintf(stderr, "\n");
 
-
-        fprintf(stderr, "Flag1 = 0x%08x\n", p->Flag1);
+	// Flag1 appears to be the engine type, but I only know 3 examples.
+	switch(p->Flag1) {
+		case 2:		fprintf(stderr, "Engine type 2 (Internal NEC-2)\n");		break;
+		case 6:		fprintf(stderr, "Engine type 6 (External NEC-4)\n");		break;
+		case 8:		fprintf(stderr, "Engine type 8 (External NEC-5)\n");		break;
+		default:	fprintf(stderr, "Engine type 0x%08x - unknown\n", p->Flag1);	break;
+	}
 
         pStr = p->Engine;
         fprintf(stderr, "Engine: ");
