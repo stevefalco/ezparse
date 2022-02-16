@@ -1201,7 +1201,7 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	}
 	fprintf(stderr, "\n");
 
-	strncpy(u.bytes, pStr, sizeof(u));
+	memcpy(u.bytes, pStr, sizeof(u));
 	pStr += sizeof(u);
         fprintf(stderr, "Eznec Program Version: ");
 	for (i = 0; i < u.value; i++) {
@@ -1212,7 +1212,7 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	// Skip 4 unknown bytes.
 	pStr += 4;
 	
-	strncpy(u.bytes, pStr, sizeof(u));
+	memcpy(u.bytes, pStr, sizeof(u));
 	pStr += sizeof(u);
 	for (i = 0; i < u.value; i++) {
 		if(*pStr == '\r') {
@@ -1275,7 +1275,7 @@ dumpBlock102(BlkHeader *pH, Block102 *p)
 	}
 	fprintf(stderr, "\n");
 
-	strncpy(u.bytes, pStr, sizeof(u));
+	memcpy(u.bytes, pStr, sizeof(u));
 	pStr += sizeof(u);
         fprintf(stderr, "Engine Path: ");
 	for (i = 0; i < u.value; i++) {
