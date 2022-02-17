@@ -1212,8 +1212,10 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	}
 	fprintf(stderr, "\n");
 
-	// Skip 4 unknown bytes.
-	pStr += 4;
+	// 4 unknown bytes, call them a flag.
+	memcpy(u32.bytes, pStr, sizeof(u32));
+	pStr += sizeof(u32);
+        fprintf(stderr, "Flag3 = 0x%08x\n", u32.value);
 	
 	memcpy(u32.bytes, pStr, sizeof(u32));
 	pStr += sizeof(u32);
