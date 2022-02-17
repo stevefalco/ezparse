@@ -95,6 +95,12 @@
 
 int	gDebug = 0;
 
+// For converting an unaligned uint32_t.
+typedef union {
+	char bytes[4];
+	uint32_t value;
+} GET_UINT32;
+
 // NB: We only declare structs to be packed if they really need it.
 // Otherwise, the compiler would give us "unaligned pointer" warnings
 // in some cases.
@@ -479,9 +485,9 @@ typedef struct __attribute__((__packed__)) {
 //
 // WARNING: We must use the BlockLen rather than the sizeof(Block102)!
 typedef struct __attribute__((__packed__)) {
-        uint32_t Flag1;         // Unknown 
-        uint32_t FirstLen;      // Length of first string
-	char	 Engine[1];	// Engine name
+        uint32_t EngineType;	// Engine type 
+        uint32_t FirstLen;	// Length of Engine name string
+	char	 EngineName[1];	// Engine name
 } Block102;
 
 typedef struct {
@@ -1156,11 +1162,6 @@ dumpVirtSegmentBlock(BlkHeader *pH, VirtSegmentBlock *p)
 	fprintf(stderr, "\n");
 }
 
-typedef union {
-	char bytes[4];
-	uint32_t value;
-} GET_UINT32;
-
 void
 dumpBlock101(BlkHeader *pH, Block101 *p)
 {
@@ -1259,14 +1260,15 @@ dumpBlock102(BlkHeader *pH, Block102 *p)
 	fprintf(stderr, "\n");
 
 	// Flag1 appears to be the engine type, but I only know 3 examples.
-	switch(p->Flag1) {
+	switch(p->EngineType) {
 		case 2:		fprintf(stderr, "Engine type 2 (Internal NEC-2)\n");		break;
+		case 4:		fprintf(stderr, "Engine type 4 (Internal NEC-4)\n");		break;
 		case 6:		fprintf(stderr, "Engine type 6 (External NEC-4)\n");		break;
 		case 8:		fprintf(stderr, "Engine type 8 (External NEC-5)\n");		break;
-		default:	fprintf(stderr, "Engine type 0x%08x - unknown\n", p->Flag1);	break;
+		default:	fprintf(stderr, "Engine type 0x%08x - unknown\n", p->EngineType); break;
 	}
 
-        pStr = p->Engine;
+        pStr = p->EngineName;
         fprintf(stderr, "Engine: ");
 	for (i = 0; i < p->FirstLen; i++) {
 		fprintf(stderr, "%c", *pStr++);
