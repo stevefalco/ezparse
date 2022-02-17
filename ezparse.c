@@ -476,15 +476,13 @@ typedef struct {
 //
 // WARNING: We must use the BlockLen rather than the sizeof(Block101)!
 typedef struct __attribute__((__packed__)) {
-        uint16_t Flag1;           // Unknown 
-        uint16_t Flag2;           // Unknown 
-	uint8_t	 PQ[8];	          // Unknown bytes
+        uint32_t Flag1;           // Unknown - I've only seen 0x1 or 0x2 here
+	uint8_t	 TimeStamp[8];    // I think this is a timestamp in 0.6 us units???
         uint32_t ProgNameLen;     // Program Name Length
         char     ProgName[1];	  // Program Name
-        uint8_t  Block101_1[15];  // The length of this depends on ProgNameLen and what else?
-        char     ProgVer[1];	  // Program Version
-        uint8_t  Block101_2[10];  // Unknown
-        char     EngineName[1];   // Engine Name
+	// There is more in this block, but because the string lengths are
+	// interspersed with the strings, we have to parse it rather than
+	// assign a structure to it.
 } Block101;
 
 // Block102
@@ -494,6 +492,9 @@ typedef struct __attribute__((__packed__)) {
         uint32_t EngineType;	// Engine type 
         uint32_t FirstLen;	// Length of Engine name string
 	char	 EngineName[1];	// Engine name
+	// There is more in this block, but because the string lengths are
+	// interspersed with the strings, we have to parse it rather than
+	// assign a structure to it.
 } Block102;
 
 typedef struct {
@@ -1189,10 +1190,9 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	fprintf(stderr, "\n");
 
 
-        fprintf(stderr, "Flag1 = 0x%04x\n", p->Flag1);
-        fprintf(stderr, "Flag2 = 0x%04x\n", p->Flag2);
+        fprintf(stderr, "Flag1 = 0x%08x\n", p->Flag1);
 
-	memcpy(u64.bytes, &p->PQ[0], sizeof(u64));
+	memcpy(u64.bytes, &p->TimeStamp[0], sizeof(u64));
 	fprintf(stderr, "Timestamp = 0x%16lx\n", u64.value);
 
 	fprintf(stderr, "ProgNameLen = %d\n", p->ProgNameLen);
@@ -1215,7 +1215,7 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	// 4 unknown bytes, call them a flag.
 	memcpy(u32.bytes, pStr, sizeof(u32));
 	pStr += sizeof(u32);
-        fprintf(stderr, "Flag3 = 0x%08x\n", u32.value);
+        fprintf(stderr, "Flag2 = 0x%08x\n", u32.value);
 	
 	memcpy(u32.bytes, pStr, sizeof(u32));
 	pStr += sizeof(u32);
@@ -1229,16 +1229,6 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	}
 	fprintf(stderr, "\n");
 
-#if 0
-	fprintf(stderr, "Eznec Program Version: ");
-	for (i = 0; i < 5; i++) {
-		fprintf(stderr, "%c", p->ProgVer[i]);
-	}
-	fprintf(stderr, "Nec Engine Name: ");
-	for(i = 0; i < p->EngineNameLen; i++) {
-		fprintf(stderr, "%c", p->EngineName[i]);
-	}
-#endif 
 	fprintf(stderr, "\n");
 	fprintf(stderr, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 	fprintf(stderr, "@@ End Dump                                                                 @@\n");
