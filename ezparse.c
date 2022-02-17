@@ -101,6 +101,12 @@ typedef union {
 	uint32_t value;
 } GET_UINT32;
 
+// For converting an unaligned uint64_t.
+typedef union {
+	char bytes[8];
+	uint64_t value;
+} GET_UINT64;
+
 // NB: We only declare structs to be packed if they really need it.
 // Otherwise, the compiler would give us "unaligned pointer" warnings
 // in some cases.
@@ -1169,7 +1175,8 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
  
         char *pStr;
 
-	GET_UINT32 u;
+	GET_UINT32 u32;
+	GET_UINT64 u64;
 
 	if(!gDebug) {
 		return;
@@ -1185,11 +1192,8 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
         fprintf(stderr, "Flag1 = 0x%04x\n", p->Flag1);
         fprintf(stderr, "Flag2 = 0x%04x\n", p->Flag2);
 
-	fprintf(stderr, "PQ[8] =");
-	for (i = 0; i < 8; i++) {
-		fprintf(stderr, " 0x%02x", p->PQ[i]);
-	}
-        fprintf(stderr, "\n\n");
+	memcpy(u64.bytes, &p->PQ[0], sizeof(u64));
+	fprintf(stderr, "Timestamp = 0x%16lx\n", u64.value);
 
 	fprintf(stderr, "ProgNameLen = %d\n", p->ProgNameLen);
 
@@ -1200,10 +1204,10 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	}
 	fprintf(stderr, "\n");
 
-	memcpy(u.bytes, pStr, sizeof(u));
-	pStr += sizeof(u);
+	memcpy(u32.bytes, pStr, sizeof(u32));
+	pStr += sizeof(u32);
         fprintf(stderr, "Eznec Program Version: ");
-	for (i = 0; i < u.value; i++) {
+	for (i = 0; i < u32.value; i++) {
 		fprintf(stderr, "%c", *pStr++);
 	}
 	fprintf(stderr, "\n");
@@ -1211,9 +1215,9 @@ dumpBlock101(BlkHeader *pH, Block101 *p)
 	// Skip 4 unknown bytes.
 	pStr += 4;
 	
-	memcpy(u.bytes, pStr, sizeof(u));
-	pStr += sizeof(u);
-	for (i = 0; i < u.value; i++) {
+	memcpy(u32.bytes, pStr, sizeof(u32));
+	pStr += sizeof(u32);
+	for (i = 0; i < u32.value; i++) {
 		if(*pStr == '\r') {
 			// suppress CR
 			pStr++;
@@ -1247,7 +1251,7 @@ dumpBlock102(BlkHeader *pH, Block102 *p)
  
         char *pStr;
 
-	GET_UINT32 u;
+	GET_UINT32 u32;
 
 	if(!gDebug) {
 		return;
@@ -1275,10 +1279,10 @@ dumpBlock102(BlkHeader *pH, Block102 *p)
 	}
 	fprintf(stderr, "\n");
 
-	memcpy(u.bytes, pStr, sizeof(u));
-	pStr += sizeof(u);
+	memcpy(u32.bytes, pStr, sizeof(u32));
+	pStr += sizeof(u32);
         fprintf(stderr, "Engine Path: ");
-	for (i = 0; i < u.value; i++) {
+	for (i = 0; i < u32.value; i++) {
 		if(*pStr == '\r') {
 			// suppress CR
 			pStr++;
